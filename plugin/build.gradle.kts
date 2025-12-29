@@ -7,10 +7,10 @@ plugins {
 }
 
 // TODO: Update value to your plugin's name.
-val pluginName = "GodotAndroidPluginTemplate"
+val pluginName = "GodotHealthConnect"
 
 // TODO: Update value to match your plugin's package name.
-val pluginPackageName = "org.godotengine.plugin.android.template"
+val pluginPackageName = "io.github.mrsfantaus.godot.healthconnect"
 
 android {
     namespace = pluginPackageName
@@ -21,7 +21,7 @@ android {
     }
 
     defaultConfig {
-        minSdk = 24
+        minSdk = 34
 
         manifestPlaceholders["godotPluginName"] = pluginName
         manifestPlaceholders["godotPluginPackageName"] = pluginPackageName
@@ -42,7 +42,9 @@ android {
 
 dependencies {
     implementation("org.godotengine:godot:4.5.1.stable")
-    // TODO: Additional dependencies should be added to export_plugin.gd as well.
+    implementation("androidx.health.connect:connect-client:1.1.0-alpha11")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.7")
 }
 
 // BUILD TASKS DEFINITION

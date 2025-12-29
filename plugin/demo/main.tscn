@@ -1,19 +1,141 @@
-[gd_scene load_steps=2 format=3 uid="uid://cg3hylang5fxn"]
+[gd_scene load_steps=2 format=3 uid="uid://b8y4y4y4y4y4"]
 
-[ext_resource type="Script" path="res://main.gd" id="1_j0gfq"]
+[ext_resource type="Script" path="res://main.gd" id="1_script"]
 
 [node name="Main" type="Node2D"]
-script = ExtResource("1_j0gfq")
+script = ExtResource("1_script")
 
-[node name="Button" type="Button" parent="."]
-anchors_preset = 14
-anchor_top = 0.5
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer"]
+anchors_preset = 15
 anchor_right = 1.0
-anchor_bottom = 0.5
-offset_left = 40.0
-offset_top = 250.0
-offset_right = 320.0
-offset_bottom = 312.0
-text = "Hello World"
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 10
 
-[connection signal="pressed" from="Button" to="." method="_on_Button_pressed"]
+[node name="Header" type="HBoxContainer" parent="CanvasLayer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="Title" type="Label" parent="CanvasLayer/VBoxContainer/Header"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "Health Connect Demo"
+
+[node name="StatusLabel" type="Label" parent="CanvasLayer/VBoxContainer/Header"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
+theme_override_font_sizes/font_size = 18
+text = "Status: Checking..."
+
+[node name="ButtonsScroll" type="ScrollContainer" parent="CanvasLayer/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+size_flags_stretch_ratio = 0.4
+
+[node name="ButtonsGrid" type="GridContainer" parent="CanvasLayer/VBoxContainer/ButtonsScroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/h_separation = 10
+theme_override_constants/v_separation = 10
+columns = 2
+
+[node name="InitBtn" type="Button" parent="CanvasLayer/VBoxContainer/ButtonsScroll/ButtonsGrid"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Initialize"
+
+[node name="SettingsBtn" type="Button" parent="CanvasLayer/VBoxContainer/ButtonsScroll/ButtonsGrid"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Open Settings"
+
+[node name="ReqPermsBtn" type="Button" parent="CanvasLayer/VBoxContainer/ButtonsScroll/ButtonsGrid"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Request Permissions"
+
+[node name="CheckPermsBtn" type="Button" parent="CanvasLayer/VBoxContainer/ButtonsScroll/ButtonsGrid"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Check Permissions"
+
+[node name="InsStepsBtn" type="Button" parent="CanvasLayer/VBoxContainer/ButtonsScroll/ButtonsGrid"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Insert Steps (500)"
+
+[node name="ReadStepsBtn" type="Button" parent="CanvasLayer/VBoxContainer/ButtonsScroll/ButtonsGrid"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Read Steps (24h)"
+
+[node name="AggStepsBtn" type="Button" parent="CanvasLayer/VBoxContainer/ButtonsScroll/ButtonsGrid"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Aggregate Steps (7d)"
+
+[node name="InsWeightBtn" type="Button" parent="CanvasLayer/VBoxContainer/ButtonsScroll/ButtonsGrid"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Insert Weight (75.5kg)"
+
+[node name="ReadWeightBtn" type="Button" parent="CanvasLayer/VBoxContainer/ButtonsScroll/ButtonsGrid"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Read Weight (30d)"
+
+[node name="InsHRBtn" type="Button" parent="CanvasLayer/VBoxContainer/ButtonsScroll/ButtonsGrid"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Insert Heart Rate"
+
+[node name="InsExBtn" type="Button" parent="CanvasLayer/VBoxContainer/ButtonsScroll/ButtonsGrid"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Insert Exercise"
+
+[node name="InsSleepBtn" type="Button" parent="CanvasLayer/VBoxContainer/ButtonsScroll/ButtonsGrid"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Insert Sleep"
+
+[node name="DelStepsBtn" type="Button" parent="CanvasLayer/VBoxContainer/ButtonsScroll/ButtonsGrid"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(1, 0.4, 0.4, 1)
+text = "Delete Steps (7d)"
+
+[node name="LogLabel" type="Label" parent="CanvasLayer/VBoxContainer"]
+layout_mode = 2
+text = "Logs:"
+
+[node name="LogContainer" type="ScrollContainer" parent="CanvasLayer/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+size_flags_stretch_ratio = 0.6
+
+[node name="LogText" type="Label" parent="CanvasLayer/VBoxContainer/LogContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_colors/font_color = Color(0.8, 0.8, 0.8, 1)
+theme_override_font_sizes/font_size = 14
+text = "Ready..."
+autowrap_mode = 3
+
+[connection signal="pressed" from="CanvasLayer/VBoxContainer/ButtonsScroll/ButtonsGrid/InitBtn" to="." method="_on_init_pressed"]
+[connection signal="pressed" from="CanvasLayer/VBoxContainer/ButtonsScroll/ButtonsGrid/SettingsBtn" to="." method="_on_settings_pressed"]
+[connection signal="pressed" from="CanvasLayer/VBoxContainer/ButtonsScroll/ButtonsGrid/ReqPermsBtn" to="." method="_on_req_permissions_pressed"]
+[connection signal="pressed" from="CanvasLayer/VBoxContainer/ButtonsScroll/ButtonsGrid/CheckPermsBtn" to="." method="_on_check_permissions_pressed"]
+[connection signal="pressed" from="CanvasLayer/VBoxContainer/ButtonsScroll/ButtonsGrid/InsStepsBtn" to="." method="_on_ins_steps_pressed"]
+[connection signal="pressed" from="CanvasLayer/VBoxContainer/ButtonsScroll/ButtonsGrid/ReadStepsBtn" to="." method="_on_read_steps_pressed"]
+[connection signal="pressed" from="CanvasLayer/VBoxContainer/ButtonsScroll/ButtonsGrid/AggStepsBtn" to="." method="_on_agg_steps_pressed"]
+[connection signal="pressed" from="CanvasLayer/VBoxContainer/ButtonsScroll/ButtonsGrid/InsWeightBtn" to="." method="_on_ins_weight_pressed"]
+[connection signal="pressed" from="CanvasLayer/VBoxContainer/ButtonsScroll/ButtonsGrid/ReadWeightBtn" to="." method="_on_read_weight_pressed"]
+[connection signal="pressed" from="CanvasLayer/VBoxContainer/ButtonsScroll/ButtonsGrid/InsHRBtn" to="." method="_on_ins_hr_pressed"]
+[connection signal="pressed" from="CanvasLayer/VBoxContainer/ButtonsScroll/ButtonsGrid/InsExBtn" to="." method="_on_ins_exercise_pressed"]
+[connection signal="pressed" from="CanvasLayer/VBoxContainer/ButtonsScroll/ButtonsGrid/InsSleepBtn" to="." method="_on_ins_sleep_pressed"]
+[connection signal="pressed" from="CanvasLayer/VBoxContainer/ButtonsScroll/ButtonsGrid/DelStepsBtn" to="." method="_on_delete_all_pressed"]

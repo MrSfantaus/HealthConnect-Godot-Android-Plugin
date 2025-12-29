@@ -17,8 +17,7 @@ func _exit_tree():
 
 
 class AndroidExportPlugin extends EditorExportPlugin:
-	# TODO: Update to your plugin's name.
-	var _plugin_name = "GodotAndroidPluginTemplate"
+	var _plugin_name = "GodotHealthConnect"
 
 	func _supports_platform(platform):
 		if platform is EditorExportPlatformAndroid:
@@ -32,11 +31,11 @@ class AndroidExportPlugin extends EditorExportPlugin:
 			return PackedStringArray([_plugin_name + "/bin/release/" + _plugin_name + "-release.aar"])
 
 	func _get_android_dependencies(platform, debug):
-		# TODO: Add remote dependices here.
-		if debug:
-			return PackedStringArray([])
-		else:
-			return PackedStringArray([])
+		return PackedStringArray([
+			"androidx.health.connect:connect-client:1.1.0-alpha11",
+			"org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1",
+			"androidx.lifecycle:lifecycle-runtime-ktx:2.8.7"
+		])
 
 	func _get_name():
 		return _plugin_name

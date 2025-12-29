@@ -1,101 +1,206 @@
-# Godot Android Plugin Template
-This repository serves as a quickstart template for building a Godot Android plugin for Godot 4.2+.
+# Godot Health Connect Plugin
 
-## Contents
-* An illustrative simple Godot project: [`plugin/demo`](plugin/demo)
-* Preconfigured gradle build file to build and package the contents for the Android plugin: 
-  [`plugin/build.gradle.kts`](plugin/build.gradle.kts)
-* Preconfigured export scripts template: 
-  [`plugin/export_scripts_template`](plugin/export_scripts_template)
-* Preconfigured manifest for the Android plugin:
-  [`plugin/src/main/AndroidManifest.xml`](plugin/src/main/AndroidManifest.xml)
-* Preconfigured source files for the Kotlin/Java logic of the Android plugin: 
-  [`plugin/src/main/java`](plugin/src/main/java)
+A high-performance Android plugin for **Godot 4.2+** that integrates with **Android Health Connect**. It allows Godot games and apps to seamlessly read, write, and aggregate health and fitness data on Android 14+ devices.
 
-## Usage
-**Note:** 
-- [Android Studio](https://developer.android.com/studio) is the recommended IDE for
-developing Godot Android plugins. 
-You can install the latest version from https://developer.android.com/studio.
-- Java 17 is the minimum required Java version.
+---
 
-To use this template, log in to github and click the green "Use this template" button at the top 
-of the repository page.
-This will let you create a copy of this repository with a clean git history.
+## 📖 Table of Contents
+1. [Features](#features)
+2. [Requirements](#requirements)
+3. [Installation](#installation)
+4. [Mandatory Android 14+ Configuration](#mandatory-android-14-configuration)
+5. [Quick Start](#quick-start)
+6. [API Reference](#api-reference)
+7. [GDScript Examples](#gdscript-examples)
+8. [Building](#building)
+9. [Troubleshooting](#troubleshooting)
 
-### Configuring the template
-After cloning your own copy to your local machine, configure the project as needed. Several 
-`TODO` have been added to the project to help identify where changes are needed; here's an 
-overview of the minimum set of modifications needed:
-* Update the name of the Android plugin. Note that the name should not contain any spaces:
-  * Open [`settings.gradle.kts`](settings.gradle.kts) and update the value for `rootProject.name`
-  * Open [`plugin/build.gradle.kts`](plugin/build.gradle.kts) and update the value for `pluginName`
-  * Open [`plugin/export_scripts_template/plugin.cfg`](plugin/export_scripts_template/plugin.cfg)
-    and update the value for `name`
-  * Open [`plugin/export_scripts_template/export_plugin.gd`](plugin/export_scripts_template/export_plugin.gd)
-    and update the value for `_plugin_name`
-* Update the package name of the Android plugin:
-  * Open [`plugin/build.gradle.kts`](plugin/build.gradle.kts) and update the value for `pluginPackageName`
-  * Make sure subdirectories under [`plugin/src/main/java`](plugin/src/main/java) match the 
-    updated package name
-  * Make sure that `package` at the top of [`GodotAndroidPlugin.kt`](plugin/src/main/java/org/godotengine/plugin/android/template/GodotAndroidPlugin.kt)
-    matches the updated package name
-* Complete the plugin configuration
-  * Open [`plugin/export_scripts_template/plugin.cfg`](plugin/export_scripts_template/plugin.cfg)
-    * Update the `description` field
-    * Update the `author` field
-    * Update the `version` field
+---
 
-### Building the configured Android plugin
-- In a terminal window, navigate to the project's root directory and run the following command:
-```
-./gradlew assemble
-```
-- On successful completion of the build, the output files can be found in
-  [`plugin/demo/addons`](plugin/demo/addons)
+## ✨ Features
+- **Android 14+ Native**: Built for the integrated Health Connect system (API 34+).
+- **Comprehensive CRUD**: Create, Read, Update, and Delete health records.
+- **Aggregation Support**: Calculate totals, averages, and min/max with time-range slicing (Daily/Weekly/Monthly).
+- **Supported Data Types**: Steps, Heart Rate, Weight, Distance, Calories, Exercise Sessions, and Sleep Sessions.
+- **Asynchronous Design**: All operations are non-blocking and communicate via Godot signals.
 
-### Testing the Android plugin
-You can use the included [Godot demo project](plugin/demo/project.godot) to test the built Android 
-plugin
+---
 
-- Open the demo in Godot (4.2 or higher)
-- Navigate to `Project` -> `Project Settings...` -> `Plugins`, and ensure the plugin is enabled
-- Install the Godot Android build template by clicking on `Project` -> `Install Android Build Template...`
-- Open [`plugin/demo/main.gd`](plugin/demo/main.gd) and update the logic as needed to reference 
-  your plugin and its methods
-- Connect an Android device to your machine and run the demo on it
+## 🛠 Requirements
+- **Godot Engine**: 4.2 or higher.
+- **Android SDK**: Min SDK 34 (Android 14 recommended).
+- **Build System**: Android Custom Build enabled in Godot.
+- **Device**: Physical device with Android 14+ (or Android 13 with the Health Connect app installed).
 
-#### Tips
-Additional dependencies added to [`plugin/build.gradle.kts`](plugin/build.gradle.kts) should be added to the `_get_android_dependencies`
-function in [`plugin/export_scripts_template/export_plugin.gd`](plugin/export_scripts_template/export_plugin.gd).
+---
 
-##### Simplify access to the exposed Java / Kotlin APIs
+## 🚀 Installation
+1. Download the plugin and place the `GodotHealthConnect` folder into your Godot project's `addons/` directory.
+2. In Godot: **Project -> Project Settings -> Plugins**, and enable **GodotHealthConnect**.
+3. **Project -> Export -> Android**:
+   - Enable **Use Custom Build**.
+   - In **Plugins**, check **Godot Health Connect**.
 
-To make it easier to access the exposed Java / Kotlin APIs in the Godot Editor, it's recommended to 
-provide one (or multiple) gdscript wrapper class(es) for your plugin users to interface with.
+---
 
-For example:
+## 🔐 Mandatory Android 14+ Configuration
+Health Connect requires specific manifest entries to allow the permission UI to open.
 
-```
-class_name PluginInterface extends Object
+### 1. Activity Alias for Privacy Policy
+Add this to your `android/build/AndroidManifest.xml` inside the `<application>` tag. Replace `com.godot.game.GodotApp` with your actual Godot activity name (usually `com.godot.game.GodotApp`).
 
-## Interface used to access the functionality provided by this plugin
-
-var _plugin_name = "GDExtensionAndroidPluginTemplate"
-var _plugin_singleton
-
-func _init():
-	if Engine.has_singleton(_plugin_name):
-		_plugin_singleton = Engine.get_singleton(_plugin_name)
-	else:
-		printerr("Initialization error: unable to access the java logic")
-
-## Shows a 'Hello World' toast.
-func helloWorld():
-	if _plugin_singleton:
-		_plugin_singleton.helloWorld()
-	else:
-		printerr("Initialization error")
-
+```xml
+<activity-alias
+    android:name="com.godot.game.HealthRationaleActivity"
+    android:targetActivity="com.godot.game.GodotApp"
+    android:exported="true"
+    android:permission="android.permission.health.READ_STEPS">
+    <intent-filter>
+        <action android:name="androidx.health.ACTION_SHOW_PERMISSIONS_RATIONALE" />
+        <category android:name="android.intent.category.DEFAULT" />
+    </intent-filter>
+    <intent-filter>
+        <action android:name="android.intent.action.VIEW_PERMISSION_USAGE" />
+        <category android:name="android.intent.category.HEALTH_PERMISSIONS" />
+    </intent-filter>
+</activity-alias>
 ```
 
+### 2. Access Property & Permissions
+Inside the `<application>` or main `<activity>` tag:
+```xml
+<property android:name="android.health.connect.ALLOW_ACCESS_PERMISSION_RATIONALE" android:value="true" />
+```
+
+Declare the permissions your app needs:
+```xml
+<uses-permission android:name="android.permission.health.READ_STEPS"/>
+<uses-permission android:name="android.permission.health.WRITE_STEPS"/>
+<uses-permission android:name="android.permission.health.READ_HEART_RATE"/>
+<uses-permission android:name="android.permission.health.WRITE_HEART_RATE"/>
+```
+
+---
+
+## 🏁 Quick Start
+
+```gdscript
+extends Node
+
+var health
+
+func _ready():
+	if Engine.has_singleton("GodotHealthConnect"):
+		health = Engine.get_singleton("GodotHealthConnect")
+		health.permissions_result.connect(_on_permissions_result)
+		
+		if health.initialize():
+			print("Health Connect Initialized")
+			_request_permissions()
+
+func _request_permissions():
+	health.request_permissions({
+		"permissions": [
+			{"type": "STEPS", "access": "READ"},
+			{"type": "STEPS", "access": "WRITE"}
+		]
+	})
+
+func _on_permissions_result(result: Dictionary):
+	print("Permissions Result: ", result)
+```
+
+---
+
+## 📚 API Reference
+
+### Methods
+| Method | Description |
+| :--- | :--- |
+| `initialize() -> bool` | Initializes the plugin. Returns `true` if successful. |
+| `is_available() -> bool` | Checks if Health Connect is available on the device. |
+| `get_sdk_status() -> Dictionary` | Returns detailed info about the SDK availability and version. |
+| `request_permissions(config: Dictionary)` | Opens the system UI to request permissions. |
+| `check_permissions(config: Dictionary) -> Dictionary` | Synchronously checks if specific permissions are granted. |
+| `get_granted_permissions() -> Array` | Returns a list of all granted health permission strings. |
+| `read_records(config: Dictionary)` | Reads records for a specific type and time range. (Signal: `records_read`) |
+| `insert_record(record: Dictionary)` | Inserts a single health record. (Signal: `record_inserted`) |
+| `read_aggregate_data(config: Dictionary)` | Queries aggregated data (Total, Avg, etc). (Signal: `aggregate_data_read`) |
+| `open_health_connect_settings()` | Opens the system Health Connect settings screen. |
+
+### Signals
+- `permissions_result(result: Dictionary)`
+- `records_read(json_string: String)`: Returns an array of records as a JSON string.
+- `aggregate_data_read(json_string: String)`: Returns an array of aggregated buckets as a JSON string.
+- `record_inserted(record_id: String)`
+- `error_occurred(code: String, message: String)`
+
+---
+
+## 💡 GDScript Examples
+
+### 1. Reading Steps from the Last 24 Hours
+```gdscript
+func read_last_day_steps():
+	var end_time = Time.get_datetime_string_from_system(true) + "Z"
+	var start_time = Time.get_datetime_string_from_unix_time(Time.get_unix_time_from_system() - 86400) + "Z"
+	
+	health.read_records({
+		"record_type": "STEPS",
+		"start_time": start_time,
+		"end_time": end_time
+	})
+
+func _on_records_read(json_string):
+	var records = JSON.parse_string(json_string)
+	for record in records:
+		print("Steps: %d from %s" % [record.count, record.start_time])
+```
+
+### 2. Inserting a Weight Record
+```gdscript
+func record_weight(kg: float):
+	health.insert_record({
+		"type": "WEIGHT",
+		"value": kg,
+		"time": Time.get_datetime_string_from_system(true) + "Z"
+	})
+```
+
+### 3. Aggregating Steps by Day (Weekly)
+```gdscript
+func get_weekly_steps_breakdown():
+	var end_time = Time.get_datetime_string_from_system(true) + "Z"
+	var start_time = Time.get_datetime_string_from_unix_time(Time.get_unix_time_from_system() - (7 * 86400)) + "Z"
+	
+	health.read_aggregate_data({
+		"record_type": "STEPS",
+		"aggregation_type": "TOTAL",
+		"time_range_slicer": "DAY",
+		"start_time": start_time,
+		"end_time": end_time
+	})
+```
+
+---
+
+## 🛠 Building
+If you want to modify the plugin and rebuild it:
+1. Ensure you have the Android SDK and Java 17 installed.
+2. Run from the root directory:
+   ```bash
+   ./gradlew assemble
+   ```
+3. The artifacts will be automatically copied to `plugin/demo/addons/GodotHealthConnect`.
+
+---
+
+## ❓ Troubleshooting
+- **Permission UI doesn't open**: Ensure you have the `activity-alias` in your Manifest and that you've requested at least one permission that matches the `android:permission` attribute in the alias.
+- **"App needs update"**: This often happens if the `ALLOW_ACCESS_PERMISSION_RATIONALE` property is missing or if the app is not signed.
+- **JSON Parsing Error**: Ensure you are using `JSON.parse_string()` on the results from `records_read` and `aggregate_data_read`.
+
+---
+
+## 📄 License
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
