@@ -6,7 +6,6 @@ import android.util.Log
 import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.permission.HealthPermission
 import androidx.health.connect.client.records.*
-import androidx.health.connect.client.PermissionController
 import org.godotengine.godot.Dictionary
 import org.godotengine.godot.Godot
 import kotlin.reflect.KClass
@@ -130,9 +129,5 @@ class PermissionHandler(
                 }
             }
         }
-    }
-
-    fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        // Handled in HealthConnectManager
     }
 }

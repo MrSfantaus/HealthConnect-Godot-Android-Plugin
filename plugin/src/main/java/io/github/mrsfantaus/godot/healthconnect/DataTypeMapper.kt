@@ -5,9 +5,8 @@ import androidx.health.connect.client.records.metadata.Metadata
 import androidx.health.connect.client.units.*
 import org.godotengine.godot.Dictionary
 import java.time.Instant
-import java.time.ZoneOffset
 import java.time.ZoneId
-import java.time.Duration
+import java.time.ZoneOffset
 
 class DataTypeMapper {
 

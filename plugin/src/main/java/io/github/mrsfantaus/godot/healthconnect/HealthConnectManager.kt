@@ -10,7 +10,6 @@ import androidx.health.connect.client.request.AggregateGroupByPeriodRequest
 import androidx.health.connect.client.records.*
 import androidx.health.connect.client.response.*
 import androidx.health.connect.client.time.TimeRangeFilter
-import androidx.health.connect.client.aggregate.AggregateMetric
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -23,7 +22,6 @@ import java.time.Period
 import java.time.Duration
 import java.time.LocalDateTime
 import java.time.ZoneId
-import java.time.ZoneOffset
 import kotlin.reflect.KClass
 
 class HealthConnectManager(private val activity: Activity, private val godot: Godot) {
