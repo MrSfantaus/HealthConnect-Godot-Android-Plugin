@@ -3,9 +3,15 @@ extends Node2D
 var _plugin_name = "GodotHealthConnect"
 var _android_plugin
 
-# UI References (will be updated in main.tscn)
+# UI References
 @onready var status_label = $CanvasLayer/VBoxContainer/Header/StatusLabel
 @onready var log_text = $CanvasLayer/VBoxContainer/LogContainer/LogText
+
+# Inputs
+@onready var step_input = %StepInput
+@onready var weight_input = %WeightInput
+@onready var height_input = %HeightInput
+@onready var hydration_input = %HydrationInput
 
 func _ready():
 	if Engine.has_singleton(_plugin_name):
@@ -77,9 +83,12 @@ func _on_req_permissions_pressed():
 	var perms = [
 		{"type": "STEPS", "access": "READ"}, {"type": "STEPS", "access": "WRITE"},
 		{"type": "WEIGHT", "access": "READ"}, {"type": "WEIGHT", "access": "WRITE"},
+		{"type": "HEIGHT", "access": "READ"}, {"type": "HEIGHT", "access": "WRITE"},
 		{"type": "HEART_RATE", "access": "READ"}, {"type": "HEART_RATE", "access": "WRITE"},
 		{"type": "DISTANCE", "access": "READ"}, {"type": "DISTANCE", "access": "WRITE"},
 		{"type": "ACTIVE_CALORIES_BURNED", "access": "READ"}, {"type": "ACTIVE_CALORIES_BURNED", "access": "WRITE"},
+		{"type": "TOTAL_CALORIES_BURNED", "access": "READ"}, {"type": "TOTAL_CALORIES_BURNED", "access": "WRITE"},
+		{"type": "HYDRATION", "access": "READ"}, {"type": "HYDRATION", "access": "WRITE"},
 		{"type": "EXERCISE_SESSION", "access": "READ"}, {"type": "EXERCISE_SESSION", "access": "WRITE"},
 		{"type": "SLEEP_SESSION", "access": "READ"}, {"type": "SLEEP_SESSION", "access": "WRITE"}
 	]
@@ -97,20 +106,21 @@ func _on_check_permissions_pressed():
 	var granted = _android_plugin.get_granted_permissions()
 	_log("All Granted: " + str(granted))
 
-# --- Steps Operations ---
+# --- Data Operations ---
 
 func _on_ins_steps_pressed():
 	if not _android_plugin: return
 	var start = _get_iso_time(-30) # 30 mins ago
 	var end = _get_iso_time(0)
+	var steps_val = step_input.value
 	var steps = {
 		"type": "STEPS",
-		"count": 500,
+		"count": steps_val,
 		"start_time": start,
 		"end_time": end
 	}
 	_android_plugin.insert_record(steps)
-	_log("Inserting 500 steps...")
+	_log("Inserting %d steps..." % steps_val)
 
 func _on_read_steps_pressed():
 	if not _android_plugin: return
@@ -138,17 +148,16 @@ func _on_agg_steps_pressed():
 	_android_plugin.read_aggregate_data(config)
 	_log("Aggregating steps (Weekly daily breakdown)...")
 
-# --- Weight Operations ---
-
 func _on_ins_weight_pressed():
 	if not _android_plugin: return
+	var val = weight_input.value
 	var record = {
 		"type": "WEIGHT",
-		"value": 75.5, # kg
+		"value": val,
 		"time": _get_iso_time()
 	}
 	_android_plugin.insert_record(record)
-	_log("Inserting weight 75.5kg...")
+	_log("Inserting weight %.1f kg..." % val)
 
 func _on_read_weight_pressed():
 	if not _android_plugin: return
@@ -161,11 +170,75 @@ func _on_read_weight_pressed():
 	})
 	_log("Reading weight history...")
 
-# --- Heart Rate Operations ---
+func _on_ins_height_pressed():
+	if not _android_plugin: return
+	var val = height_input.value
+	var record = {
+		"type": "HEIGHT",
+		"value": val,
+		"time": _get_iso_time()
+	}
+	_android_plugin.insert_record(record)
+	_log("Inserting height %.2f m..." % val)
+
+func _on_read_height_pressed():
+	if not _android_plugin: return
+	var start = _get_iso_time(-43200) # 30 days
+	var end = _get_iso_time(0)
+	_android_plugin.read_records({
+		"record_type": "HEIGHT",
+		"start_time": start,
+		"end_time": end
+	})
+	_log("Reading height history...")
+
+func _on_ins_hydra_pressed():
+	if not _android_plugin: return
+	var val = hydration_input.value
+	var record = {
+		"type": "HYDRATION",
+		"value": val,
+		"start_time": _get_iso_time(-5),
+		"end_time": _get_iso_time(0)
+	}
+	_android_plugin.insert_record(record)
+	_log("Inserting hydration %.1f L..." % val)
+
+func _on_read_hydra_pressed():
+	if not _android_plugin: return
+	var start = _get_iso_time(-1440) # 24h
+	var end = _get_iso_time(0)
+	_android_plugin.read_records({
+		"record_type": "HYDRATION",
+		"start_time": start,
+		"end_time": end
+	})
+	_log("Reading hydration (24h)...")
+
+func _on_ins_total_cal_pressed():
+	if not _android_plugin: return
+	var record = {
+		"type": "TOTAL_CALORIES_BURNED",
+		"value": 2000.0,
+		"start_time": _get_iso_time(-60), # 1 hour ago
+		"end_time": _get_iso_time(0)
+	}
+	_android_plugin.insert_record(record)
+	_log("Inserting 2000 total calories (1h interval)...")
+
+func _on_read_total_cal_pressed():
+	if not _android_plugin: return
+	var start = _get_iso_time(-120) # 2 hours ago
+	var end = _get_iso_time(10) # 10 mins into future
+	_android_plugin.read_records({
+		"record_type": "TOTAL_CALORIES_BURNED",
+		"start_time": start,
+		"end_time": end
+	})
+	_log("Reading total calories (2h range)...")
 
 func _on_ins_hr_pressed():
 	if not _android_plugin: return
-	# Create a series of samples
 	var samples = []
 	for i in range(5):
 		samples.append({
@@ -182,15 +255,13 @@ func _on_ins_hr_pressed():
 	_android_plugin.insert_record(record)
 	_log("Inserting Heart Rate Series...")
 
-# --- Session Operations ---
-
 func _on_ins_exercise_pressed():
 	if not _android_plugin: return
 	var record = {
 		"type": "EXERCISE_SESSION",
 		"start_time": _get_iso_time(-60),
 		"end_time": _get_iso_time(0),
-		"exercise_type": 56, # RUNNING (example ID)
+		"exercise_type": 56, # RUNNING
 		"title": "Morning Run",
 		"notes": "Feeling good"
 	}
@@ -208,8 +279,6 @@ func _on_ins_sleep_pressed():
 	}
 	_android_plugin.insert_record(record)
 	_log("Inserting Sleep Session...")
-
-# --- Delete ---
 
 func _on_delete_all_pressed():
 	if not _android_plugin: return
@@ -232,16 +301,21 @@ func _on_records_read(json_string):
 	if records is Array:
 		_log("Records Found: " + str(records.size()))
 		for r in records:
-			if r.has("type") and r.type == "STEPS":
-				_log(" - Steps: " + str(r.count) + " (" + r.start_time + ")")
-			elif r.has("type") and r.type == "WEIGHT":
-				_log(" - Weight: " + str(r.value) + "kg (" + r.time + ")")
+			if r.has("type"):
+				match r.type:
+					"STEPS": _log(" - Steps: %d (%s)" % [r.count, r.start_time])
+					"WEIGHT": _log(" - Weight: %.1f kg (%s)" % [r.value, r.time])
+					"HEIGHT": _log(" - Height: %.2f m (%s)" % [r.value, r.time])
+					"HYDRATION": _log(" - Hydration: %.1f L (%s)" % [r.value, r.start_time])
+					"TOTAL_CALORIES_BURNED": _log(" - Total Cal: %.0f kcal (%s)" % [r.value, r.start_time])
+					_: _log(" - %s: %s" % [r.type, str(r)])
 			else:
 				_log(" - " + str(r))
 	else:
-		_log("Records Read Error: Invalid format")
+		_log("Records Read Error: Invalid JSON format or not an array")
 
-func _on_record_read(record):
+func _on_record_read(json_string):
+	var record = JSON.parse_string(json_string)
 	_log("Single Record: " + str(record))
 
 func _on_aggregate_data_read(json_string):
@@ -251,7 +325,7 @@ func _on_aggregate_data_read(json_string):
 		for a in aggregates:
 			_log(" - " + str(a))
 	else:
-		_log("Aggregate Read Error: Invalid format")
+		_log("Aggregate Read Error: Invalid JSON format or not an array")
 
 func _on_record_inserted(record_id):
 	_log("SUCCESS: Record Inserted (ID: " + str(record_id) + ")")

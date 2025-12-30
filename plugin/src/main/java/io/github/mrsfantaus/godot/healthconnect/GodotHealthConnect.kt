@@ -17,16 +17,16 @@ class GodotHealthConnect(godot: Godot): GodotPlugin(godot) {
 
     private var healthConnectManager: HealthConnectManager? = null
 
-    override fun getPluginName() = BuildConfig.GODOT_PLUGIN_NAME
+    override fun getPluginName() = "GodotHealthConnect"
 
     override fun getPluginSignals(): Set<SignalInfo> {
         return setOf(
             SignalInfo("permissions_result", Dictionary::class.java),
             SignalInfo("records_read", String::class.java),
             SignalInfo("aggregate_data_read", String::class.java),
-            SignalInfo("record_read", Dictionary::class.java),
+            SignalInfo("record_read", String::class.java),
             SignalInfo("record_inserted", String::class.java),
-            SignalInfo("records_inserted", Array<Any>::class.java),
+            SignalInfo("records_inserted", Dictionary::class.java),
             SignalInfo("record_updated", Boolean::class.javaObjectType),
             SignalInfo("record_deleted", Boolean::class.javaObjectType),
             SignalInfo("records_deleted", Integer::class.java),
@@ -149,8 +149,8 @@ class GodotHealthConnect(godot: Godot): GodotPlugin(godot) {
     @UsedByGodot
     fun get_supported_record_types(): Array<String> {
         return arrayOf(
-            "STEPS", "DISTANCE", "ACTIVE_CALORIES_BURNED", "WEIGHT",
-            "HEART_RATE", "EXERCISE_SESSION", "SLEEP_SESSION"
+            "STEPS", "DISTANCE", "ACTIVE_CALORIES_BURNED", "TOTAL_CALORIES_BURNED",
+            "WEIGHT", "HEIGHT", "HEART_RATE", "HYDRATION", "EXERCISE_SESSION", "SLEEP_SESSION"
         )
     }
 

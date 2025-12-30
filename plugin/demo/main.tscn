@@ -11,6 +11,10 @@ script = ExtResource("1_script")
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_left = 10.0
+offset_top = 10.0
+offset_right = -10.0
+offset_bottom = -10.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/separation = 10
@@ -30,10 +34,55 @@ theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
 theme_override_font_sizes/font_size = 18
 text = "Status: Checking..."
 
+[node name="Inputs" type="GridContainer" parent="CanvasLayer/VBoxContainer"]
+layout_mode = 2
+columns = 4
+theme_override_constants/h_separation = 10
+
+[node name="LabelSteps" type="Label" parent="CanvasLayer/VBoxContainer/Inputs"]
+layout_mode = 2
+text = "Steps:"
+
+[node name="StepInput" type="SpinBox" parent="CanvasLayer/VBoxContainer/Inputs"]
+unique_name_in_owner = true
+layout_mode = 2
+max_value = 100000.0
+value = 500.0
+
+[node name="LabelWeight" type="Label" parent="CanvasLayer/VBoxContainer/Inputs"]
+layout_mode = 2
+text = "Weight (kg):"
+
+[node name="WeightInput" type="SpinBox" parent="CanvasLayer/VBoxContainer/Inputs"]
+unique_name_in_owner = true
+layout_mode = 2
+step = 0.1
+value = 75.5
+
+[node name="LabelHeight" type="Label" parent="CanvasLayer/VBoxContainer/Inputs"]
+layout_mode = 2
+text = "Height (m):"
+
+[node name="HeightInput" type="SpinBox" parent="CanvasLayer/VBoxContainer/Inputs"]
+unique_name_in_owner = true
+layout_mode = 2
+step = 0.01
+value = 1.75
+
+[node name="LabelHydra" type="Label" parent="CanvasLayer/VBoxContainer/Inputs"]
+layout_mode = 2
+text = "Water (L):"
+
+[node name="HydrationInput" type="SpinBox" parent="CanvasLayer/VBoxContainer/Inputs"]
+unique_name_in_owner = true
+layout_mode = 2
+step = 0.1
+value = 0.5
+
 [node name="ButtonsScroll" type="ScrollContainer" parent="CanvasLayer/VBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 3
-size_flags_stretch_ratio = 0.4
+size_flags_stretch_ratio = 0.5
 
 [node name="ButtonsGrid" type="GridContainer" parent="CanvasLayer/VBoxContainer/ButtonsScroll"]
 layout_mode = 2
@@ -65,7 +114,7 @@ text = "Check Permissions"
 [node name="InsStepsBtn" type="Button" parent="CanvasLayer/VBoxContainer/ButtonsScroll/ButtonsGrid"]
 layout_mode = 2
 size_flags_horizontal = 3
-text = "Insert Steps (500)"
+text = "Insert Steps"
 
 [node name="ReadStepsBtn" type="Button" parent="CanvasLayer/VBoxContainer/ButtonsScroll/ButtonsGrid"]
 layout_mode = 2
@@ -80,12 +129,42 @@ text = "Aggregate Steps (7d)"
 [node name="InsWeightBtn" type="Button" parent="CanvasLayer/VBoxContainer/ButtonsScroll/ButtonsGrid"]
 layout_mode = 2
 size_flags_horizontal = 3
-text = "Insert Weight (75.5kg)"
+text = "Insert Weight"
 
 [node name="ReadWeightBtn" type="Button" parent="CanvasLayer/VBoxContainer/ButtonsScroll/ButtonsGrid"]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Read Weight (30d)"
+
+[node name="InsHeightBtn" type="Button" parent="CanvasLayer/VBoxContainer/ButtonsScroll/ButtonsGrid"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Insert Height"
+
+[node name="ReadHeightBtn" type="Button" parent="CanvasLayer/VBoxContainer/ButtonsScroll/ButtonsGrid"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Read Height"
+
+[node name="InsHydraBtn" type="Button" parent="CanvasLayer/VBoxContainer/ButtonsScroll/ButtonsGrid"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Insert Hydration"
+
+[node name="ReadHydraBtn" type="Button" parent="CanvasLayer/VBoxContainer/ButtonsScroll/ButtonsGrid"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Read Hydration"
+
+[node name="InsTotalCalBtn" type="Button" parent="CanvasLayer/VBoxContainer/ButtonsScroll/ButtonsGrid"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Insert Total Cal (2000)"
+
+[node name="ReadTotalCalBtn" type="Button" parent="CanvasLayer/VBoxContainer/ButtonsScroll/ButtonsGrid"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Read Total Cal"
 
 [node name="InsHRBtn" type="Button" parent="CanvasLayer/VBoxContainer/ButtonsScroll/ButtonsGrid"]
 layout_mode = 2
@@ -115,7 +194,7 @@ text = "Logs:"
 [node name="LogContainer" type="ScrollContainer" parent="CanvasLayer/VBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 3
-size_flags_stretch_ratio = 0.6
+size_flags_stretch_ratio = 0.5
 
 [node name="LogText" type="Label" parent="CanvasLayer/VBoxContainer/LogContainer"]
 layout_mode = 2
@@ -135,6 +214,12 @@ autowrap_mode = 3
 [connection signal="pressed" from="CanvasLayer/VBoxContainer/ButtonsScroll/ButtonsGrid/AggStepsBtn" to="." method="_on_agg_steps_pressed"]
 [connection signal="pressed" from="CanvasLayer/VBoxContainer/ButtonsScroll/ButtonsGrid/InsWeightBtn" to="." method="_on_ins_weight_pressed"]
 [connection signal="pressed" from="CanvasLayer/VBoxContainer/ButtonsScroll/ButtonsGrid/ReadWeightBtn" to="." method="_on_read_weight_pressed"]
+[connection signal="pressed" from="CanvasLayer/VBoxContainer/ButtonsScroll/ButtonsGrid/InsHeightBtn" to="." method="_on_ins_height_pressed"]
+[connection signal="pressed" from="CanvasLayer/VBoxContainer/ButtonsScroll/ButtonsGrid/ReadHeightBtn" to="." method="_on_read_height_pressed"]
+[connection signal="pressed" from="CanvasLayer/VBoxContainer/ButtonsScroll/ButtonsGrid/InsHydraBtn" to="." method="_on_ins_hydra_pressed"]
+[connection signal="pressed" from="CanvasLayer/VBoxContainer/ButtonsScroll/ButtonsGrid/ReadHydraBtn" to="." method="_on_read_hydra_pressed"]
+[connection signal="pressed" from="CanvasLayer/VBoxContainer/ButtonsScroll/ButtonsGrid/InsTotalCalBtn" to="." method="_on_ins_total_cal_pressed"]
+[connection signal="pressed" from="CanvasLayer/VBoxContainer/ButtonsScroll/ButtonsGrid/ReadTotalCalBtn" to="." method="_on_read_total_cal_pressed"]
 [connection signal="pressed" from="CanvasLayer/VBoxContainer/ButtonsScroll/ButtonsGrid/InsHRBtn" to="." method="_on_ins_hr_pressed"]
 [connection signal="pressed" from="CanvasLayer/VBoxContainer/ButtonsScroll/ButtonsGrid/InsExBtn" to="." method="_on_ins_exercise_pressed"]
 [connection signal="pressed" from="CanvasLayer/VBoxContainer/ButtonsScroll/ButtonsGrid/InsSleepBtn" to="." method="_on_ins_sleep_pressed"]

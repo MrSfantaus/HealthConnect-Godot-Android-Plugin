@@ -17,7 +17,7 @@ android {
     compileSdk = 36
 
     buildFeatures {
-        buildConfig = true
+        buildConfig = false
     }
 
     defaultConfig {
@@ -25,7 +25,6 @@ android {
 
         manifestPlaceholders["godotPluginName"] = pluginName
         manifestPlaceholders["godotPluginPackageName"] = pluginPackageName
-        buildConfigField("String", "GODOT_PLUGIN_NAME", "\"${pluginName}\"")
         setProperty("archivesBaseName", pluginName)
     }
 

@@ -6,9 +6,14 @@ import androidx.health.connect.client.units.*
 import org.godotengine.godot.Dictionary
 import java.time.Instant
 import java.time.ZoneOffset
+import java.time.ZoneId
 import java.time.Duration
 
 class DataTypeMapper {
+
+    private fun getSystemOffset(): ZoneOffset {
+        return ZoneId.systemDefault().rules.getOffset(Instant.now())
+    }
 
     fun mapToRecord(dict: Dictionary): Record? {
         val type = dict["type"] as? String ?: return null
@@ -20,6 +25,7 @@ class DataTypeMapper {
         val startInstant = startTimeStr?.let { Instant.parse(it) } ?: Instant.now()
         val endInstant = endTimeStr?.let { Instant.parse(it) } ?: Instant.now()
         val instant = timeStr?.let { Instant.parse(it) } ?: Instant.now()
+        val offset = getSystemOffset()
 
         val metadata = if (id != null) {
             Metadata(id)
@@ -32,30 +38,44 @@ class DataTypeMapper {
                 count = (dict["count"] as? Number)?.toLong() ?: 0,
                 startTime = startInstant,
                 endTime = endInstant,
-                startZoneOffset = ZoneOffset.UTC,
-                endZoneOffset = ZoneOffset.UTC,
+                startZoneOffset = offset,
+                endZoneOffset = offset,
                 metadata = metadata
             )
             "DISTANCE" -> DistanceRecord(
                 distance = Length.meters((dict["value"] as? Number)?.toDouble() ?: 0.0),
                 startTime = startInstant,
                 endTime = endInstant,
-                startZoneOffset = ZoneOffset.UTC,
-                endZoneOffset = ZoneOffset.UTC,
+                startZoneOffset = offset,
+                endZoneOffset = offset,
                 metadata = metadata
             )
             "ACTIVE_CALORIES_BURNED" -> ActiveCaloriesBurnedRecord(
                 energy = Energy.kilocalories((dict["value"] as? Number)?.toDouble() ?: 0.0),
                 startTime = startInstant,
                 endTime = endInstant,
-                startZoneOffset = ZoneOffset.UTC,
-                endZoneOffset = ZoneOffset.UTC,
+                startZoneOffset = offset,
+                endZoneOffset = offset,
+                metadata = metadata
+            )
+            "TOTAL_CALORIES_BURNED" -> TotalCaloriesBurnedRecord(
+                energy = Energy.kilocalories((dict["value"] as? Number)?.toDouble() ?: 0.0),
+                startTime = startInstant,
+                endTime = endInstant,
+                startZoneOffset = offset,
+                endZoneOffset = offset,
                 metadata = metadata
             )
             "WEIGHT" -> WeightRecord(
                 weight = Mass.kilograms((dict["value"] as? Number)?.toDouble() ?: 0.0),
                 time = instant,
-                zoneOffset = ZoneOffset.UTC,
+                zoneOffset = offset,
+                metadata = metadata
+            )
+            "HEIGHT" -> HeightRecord(
+                height = Length.meters((dict["value"] as? Number)?.toDouble() ?: 0.0),
+                time = instant,
+                zoneOffset = offset,
                 metadata = metadata
             )
             "HEART_RATE" -> {
@@ -70,17 +90,25 @@ class DataTypeMapper {
                 HeartRateRecord(
                     startTime = startInstant,
                     endTime = endInstant,
-                    startZoneOffset = ZoneOffset.UTC,
-                    endZoneOffset = ZoneOffset.UTC,
+                    startZoneOffset = offset,
+                    endZoneOffset = offset,
                     samples = heartRateSamples,
                     metadata = metadata
                 )
             }
+            "HYDRATION" -> HydrationRecord(
+                volume = Volume.liters((dict["value"] as? Number)?.toDouble() ?: 0.0),
+                startTime = startInstant,
+                endTime = endInstant,
+                startZoneOffset = offset,
+                endZoneOffset = offset,
+                metadata = metadata
+            )
             "EXERCISE_SESSION" -> ExerciseSessionRecord(
                 startTime = startInstant,
                 endTime = endInstant,
-                startZoneOffset = ZoneOffset.UTC,
-                endZoneOffset = ZoneOffset.UTC,
+                startZoneOffset = offset,
+                endZoneOffset = offset,
                 exerciseType = (dict["exercise_type"] as? Number)?.toInt() ?: ExerciseSessionRecord.EXERCISE_TYPE_OTHER_WORKOUT,
                 title = dict["title"] as? String,
                 notes = dict["notes"] as? String,
@@ -89,8 +117,8 @@ class DataTypeMapper {
             "SLEEP_SESSION" -> SleepSessionRecord(
                 startTime = startInstant,
                 endTime = endInstant,
-                startZoneOffset = ZoneOffset.UTC,
-                endZoneOffset = ZoneOffset.UTC,
+                startZoneOffset = offset,
+                endZoneOffset = offset,
                 title = dict["title"] as? String,
                 notes = dict["notes"] as? String,
                 metadata = metadata
@@ -123,9 +151,20 @@ class DataTypeMapper {
                 dict["start_time"] = record.startTime.toString()
                 dict["end_time"] = record.endTime.toString()
             }
+            is TotalCaloriesBurnedRecord -> {
+                dict["type"] = "TOTAL_CALORIES_BURNED"
+                dict["value"] = record.energy.inKilocalories
+                dict["start_time"] = record.startTime.toString()
+                dict["end_time"] = record.endTime.toString()
+            }
             is WeightRecord -> {
                 dict["type"] = "WEIGHT"
                 dict["value"] = record.weight.inKilograms
+                dict["time"] = record.time.toString()
+            }
+            is HeightRecord -> {
+                dict["type"] = "HEIGHT"
+                dict["value"] = record.height.inMeters
                 dict["time"] = record.time.toString()
             }
             is HeartRateRecord -> {
@@ -139,6 +178,12 @@ class DataTypeMapper {
                     s
                 }
                 dict["samples"] = samples.toTypedArray()
+            }
+            is HydrationRecord -> {
+                dict["type"] = "HYDRATION"
+                dict["value"] = record.volume.inLiters
+                dict["start_time"] = record.startTime.toString()
+                dict["end_time"] = record.endTime.toString()
             }
             is ExerciseSessionRecord -> {
                 dict["type"] = "EXERCISE_SESSION"

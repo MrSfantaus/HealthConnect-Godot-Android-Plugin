@@ -11,9 +11,8 @@ A high-performance Android plugin for **Godot 4.2+** that integrates with **Andr
 4. [Mandatory Android 14+ Configuration](#mandatory-android-14-configuration)
 5. [Quick Start](#quick-start)
 6. [API Reference](#api-reference)
-7. [GDScript Examples](#gdscript-examples)
-8. [Building](#building)
-9. [Troubleshooting](#troubleshooting)
+7. [Building](#building)
+8. [Troubleshooting](#troubleshooting)
 
 ---
 
@@ -21,14 +20,16 @@ A high-performance Android plugin for **Godot 4.2+** that integrates with **Andr
 - **Android 14+ Native**: Built for the integrated Health Connect system (API 34+).
 - **Comprehensive CRUD**: Create, Read, Update, and Delete health records.
 - **Aggregation Support**: Calculate totals, averages, and min/max with time-range slicing (Daily/Weekly/Monthly).
-- **Supported Data Types**: Steps, Heart Rate, Weight, Distance, Calories, Exercise Sessions, and Sleep Sessions.
+- **Supported Data Types**: Steps, Heart Rate, Weight, Height, Distance, Active/Total Calories, Hydration, Exercise Sessions, and Sleep Sessions.
+- **JSON Bridge Reliability**: Uses JSON serialization for complex data exchange between Kotlin and GDScript, ensuring 100% reliability across all Android versions.
+- **Local Timezone Aware**: Automatically handles system timezone offsets for accurate data recording.
 - **Asynchronous Design**: All operations are non-blocking and communicate via Godot signals.
 
 ---
 
 ## 🛠 Requirements
 - **Godot Engine**: 4.2 or higher.
-- **Android SDK**: Min SDK 34 (Android 14 recommended).
+- **Android SDK**: Min SDK 34 (Android 14+).
 - **Build System**: Android Custom Build enabled in Godot.
 - **Device**: Physical device with Android 14+ (or Android 13 with the Health Connect app installed).
 
@@ -47,9 +48,10 @@ A high-performance Android plugin for **Godot 4.2+** that integrates with **Andr
 Health Connect requires specific manifest entries to allow the permission UI to open.
 
 ### 1. Activity Alias for Privacy Policy
-Add this to your `android/build/AndroidManifest.xml` inside the `<application>` tag. Replace `com.godot.game.GodotApp` with your actual Godot activity name (usually `com.godot.game.GodotApp`).
+Add this to your `android/build/AndroidManifest.xml` (or your Godot export template) inside the `<application>` tag. Replace `com.godot.game.GodotApp` with your actual Godot activity name.
 
 ```xml
+<!-- Health Connect Privacy Policy Rationale -->
 <activity-alias
     android:name="com.godot.game.HealthRationaleActivity"
     android:targetActivity="com.godot.game.GodotApp"
@@ -67,17 +69,33 @@ Add this to your `android/build/AndroidManifest.xml` inside the `<application>` 
 ```
 
 ### 2. Access Property & Permissions
-Inside the `<application>` or main `<activity>` tag:
+Inside the `<application>` tag:
 ```xml
 <property android:name="android.health.connect.ALLOW_ACCESS_PERMISSION_RATIONALE" android:value="true" />
 ```
 
-Declare the permissions your app needs:
+Declare all permissions your app needs:
 ```xml
 <uses-permission android:name="android.permission.health.READ_STEPS"/>
 <uses-permission android:name="android.permission.health.WRITE_STEPS"/>
+<uses-permission android:name="android.permission.health.READ_WEIGHT"/>
+<uses-permission android:name="android.permission.health.WRITE_WEIGHT"/>
+<uses-permission android:name="android.permission.health.READ_HEIGHT"/>
+<uses-permission android:name="android.permission.health.WRITE_HEIGHT"/>
 <uses-permission android:name="android.permission.health.READ_HEART_RATE"/>
 <uses-permission android:name="android.permission.health.WRITE_HEART_RATE"/>
+<uses-permission android:name="android.permission.health.READ_DISTANCE"/>
+<uses-permission android:name="android.permission.health.WRITE_DISTANCE"/>
+<uses-permission android:name="android.permission.health.READ_ACTIVE_CALORIES_BURNED"/>
+<uses-permission android:name="android.permission.health.WRITE_ACTIVE_CALORIES_BURNED"/>
+<uses-permission android:name="android.permission.health.READ_TOTAL_CALORIES_BURNED"/>
+<uses-permission android:name="android.permission.health.WRITE_TOTAL_CALORIES_BURNED"/>
+<uses-permission android:name="android.permission.health.READ_HYDRATION"/>
+<uses-permission android:name="android.permission.health.WRITE_HYDRATION"/>
+<uses-permission android:name="android.permission.health.READ_EXERCISE"/>
+<uses-permission android:name="android.permission.health.WRITE_EXERCISE"/>
+<uses-permission android:name="android.permission.health.READ_SLEEP"/>
+<uses-permission android:name="android.permission.health.WRITE_SLEEP"/>
 ```
 
 ---
@@ -93,6 +111,7 @@ func _ready():
 	if Engine.has_singleton("GodotHealthConnect"):
 		health = Engine.get_singleton("GodotHealthConnect")
 		health.permissions_result.connect(_on_permissions_result)
+		health.records_read.connect(_on_records_read)
 		
 		if health.initialize():
 			print("Health Connect Initialized")
@@ -108,6 +127,11 @@ func _request_permissions():
 
 func _on_permissions_result(result: Dictionary):
 	print("Permissions Result: ", result)
+
+func _on_records_read(json_string: String):
+	var records = JSON.parse_string(json_string)
+	if records is Array:
+		print("Found %d records" % records.size())
 ```
 
 ---
@@ -132,6 +156,7 @@ func _on_permissions_result(result: Dictionary):
 - `permissions_result(result: Dictionary)`
 - `records_read(json_string: String)`: Returns an array of records as a JSON string.
 - `aggregate_data_read(json_string: String)`: Returns an array of aggregated buckets as a JSON string.
+- `record_read(json_string: String)`: Returns a single record as a JSON string.
 - `record_inserted(record_id: String)`
 - `error_occurred(code: String, message: String)`
 
@@ -151,7 +176,7 @@ func read_last_day_steps():
 		"end_time": end_time
 	})
 
-func _on_records_read(json_string):
+func _on_records_read(json_string: String):
 	var records = JSON.parse_string(json_string)
 	for record in records:
 		print("Steps: %d from %s" % [record.count, record.start_time])
@@ -166,39 +191,6 @@ func record_weight(kg: float):
 		"time": Time.get_datetime_string_from_system(true) + "Z"
 	})
 ```
-
-### 3. Aggregating Steps by Day (Weekly)
-```gdscript
-func get_weekly_steps_breakdown():
-	var end_time = Time.get_datetime_string_from_system(true) + "Z"
-	var start_time = Time.get_datetime_string_from_unix_time(Time.get_unix_time_from_system() - (7 * 86400)) + "Z"
-	
-	health.read_aggregate_data({
-		"record_type": "STEPS",
-		"aggregation_type": "TOTAL",
-		"time_range_slicer": "DAY",
-		"start_time": start_time,
-		"end_time": end_time
-	})
-```
-
----
-
-## 🛠 Building
-If you want to modify the plugin and rebuild it:
-1. Ensure you have the Android SDK and Java 17 installed.
-2. Run from the root directory:
-   ```bash
-   ./gradlew assemble
-   ```
-3. The artifacts will be automatically copied to `plugin/demo/addons/GodotHealthConnect`.
-
----
-
-## ❓ Troubleshooting
-- **Permission UI doesn't open**: Ensure you have the `activity-alias` in your Manifest and that you've requested at least one permission that matches the `android:permission` attribute in the alias.
-- **"App needs update"**: This often happens if the `ALLOW_ACCESS_PERMISSION_RATIONALE` property is missing or if the app is not signed.
-- **JSON Parsing Error**: Ensure you are using `JSON.parse_string()` on the results from `records_read` and `aggregate_data_read`.
 
 ---
 

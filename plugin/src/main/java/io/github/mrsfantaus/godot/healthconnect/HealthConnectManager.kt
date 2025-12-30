@@ -34,9 +34,12 @@ class HealthConnectManager(private val activity: Activity, private val godot: Go
         private val TYPE_MAP: Map<String, KClass<out Record>> = mapOf(
             "STEPS" to StepsRecord::class,
             "WEIGHT" to WeightRecord::class,
+            "HEIGHT" to HeightRecord::class,
             "HEART_RATE" to HeartRateRecord::class,
             "DISTANCE" to DistanceRecord::class,
             "ACTIVE_CALORIES_BURNED" to ActiveCaloriesBurnedRecord::class,
+            "TOTAL_CALORIES_BURNED" to TotalCaloriesBurnedRecord::class,
+            "HYDRATION" to HydrationRecord::class,
             "EXERCISE_SESSION" to ExerciseSessionRecord::class,
             "SLEEP_SESSION" to SleepSessionRecord::class
         )
@@ -45,12 +48,14 @@ class HealthConnectManager(private val activity: Activity, private val godot: Go
             "STEPS_TOTAL" to StepsRecord.COUNT_TOTAL,
             "DISTANCE_TOTAL" to DistanceRecord.DISTANCE_TOTAL,
             "ACTIVE_CALORIES_BURNED_TOTAL" to ActiveCaloriesBurnedRecord.ACTIVE_CALORIES_TOTAL,
+            "TOTAL_CALORIES_BURNED_TOTAL" to TotalCaloriesBurnedRecord.ENERGY_TOTAL,
             "WEIGHT_AVG" to WeightRecord.WEIGHT_AVG,
             "WEIGHT_MIN" to WeightRecord.WEIGHT_MIN,
             "WEIGHT_MAX" to WeightRecord.WEIGHT_MAX,
             "HEART_RATE_AVG" to HeartRateRecord.BPM_AVG,
             "HEART_RATE_MIN" to HeartRateRecord.BPM_MIN,
-            "HEART_RATE_MAX" to HeartRateRecord.BPM_MAX
+            "HEART_RATE_MAX" to HeartRateRecord.BPM_MAX,
+            "HYDRATION_TOTAL" to HydrationRecord.VOLUME_TOTAL
         )
     }
 
@@ -105,7 +110,9 @@ class HealthConnectManager(private val activity: Activity, private val godot: Go
                 }
                 if (records.isNotEmpty()) {
                     val response = healthConnectClient.insertRecords(records)
-                    plugin.emitPluginSignal("records_inserted", response.recordIdsList.toTypedArray())
+                    val signalDict = Dictionary()
+                    signalDict["record_ids"] = response.recordIdsList.toTypedArray()
+                    plugin.emitPluginSignal("records_inserted", signalDict)
                 } else {
                     plugin.emitPluginSignal("error_occurred", "ERROR_INVALID_DATA", "No valid records to insert")
                 }
@@ -132,7 +139,8 @@ class HealthConnectManager(private val activity: Activity, private val godot: Go
                 val response = healthConnectClient.readRecords(request)
                 val resultList = response.records.map { dataTypeMapper.mapFromRecord(it) }
                 
-                // Manually build JSON array from Dictionary list
+                Log.i(TAG, "readRecords: Found ${resultList.size} records")
+                
                 val jsonArray = JSONArray()
                 resultList.forEach { dict ->
                     val jsonObj = JSONObject()
@@ -141,9 +149,9 @@ class HealthConnectManager(private val activity: Activity, private val godot: Go
                     }
                     jsonArray.put(jsonObj)
                 }
-                
                 plugin.emitPluginSignal("records_read", jsonArray.toString())
             } catch (e: Exception) {
+                Log.e(TAG, "readRecords error: ${e.message}", e)
                 plugin.emitPluginSignal("error_occurred", "ERROR_READ_FAILED", e.message ?: "Unknown error")
             }
         }
@@ -155,8 +163,15 @@ class HealthConnectManager(private val activity: Activity, private val godot: Go
                 val recordClass = TYPE_MAP[typeStr] ?: return@launch
                 val response = healthConnectClient.readRecord(recordClass, recordId)
                 val result = dataTypeMapper.mapFromRecord(response.record)
-                plugin.emitPluginSignal("record_read", result)
+                Log.i(TAG, "readRecordById: Success")
+                
+                val jsonObj = JSONObject()
+                result.forEach { (key, value) ->
+                    jsonObj.put(key.toString(), value)
+                }
+                plugin.emitPluginSignal("record_read", jsonObj.toString())
             } catch (e: Exception) {
+                Log.e(TAG, "readRecordById error: ${e.message}", e)
                 plugin.emitPluginSignal("error_occurred", "ERROR_RECORD_NOT_FOUND", e.message ?: "Unknown error")
             }
         }
@@ -220,8 +235,10 @@ class HealthConnectManager(private val activity: Activity, private val godot: Go
                     jsonArray.put(jsonObj)
                 }
                 
+                Log.i(TAG, "readAggregateData: Emitting ${jsonArray.length()} buckets")
                 plugin.emitPluginSignal("aggregate_data_read", jsonArray.toString())
             } catch (e: Exception) {
+                Log.e(TAG, "readAggregateData error: ${e.message}", e)
                 plugin.emitPluginSignal("error_occurred", "ERROR_READ_FAILED", e.message ?: "Unknown error")
             }
         }
